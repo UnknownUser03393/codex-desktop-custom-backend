@@ -11,7 +11,7 @@ Desktop 版本：`OpenAI.Codex 26.1117.4957.0`（AppX，x64）
 - 已用 **用户级环境变量 `CODEX_CLI_PATH`** 让 Codex Desktop 稳定加载自编译后端，不再往
   `%LOCALAPPDATA%\OpenAI\Codex\bin\...` 缓存路径里硬替换。
 - 重启后实际运行的 `app-server` 与 `exec-server` 进程均为
-  `D:\Development\CodexBypassPermissionsRRO\custom-backend\codex.exe`
+  `%WORKSPACE%\custom-backend\codex.exe`
   （SHA-256 `696FB389E12AF6E47B38331EA30DC6A5F209DD458F1EBE95CF91EEB9A1F4031D`）。
 - 原版包内文件与缓存目录均未被修改，随时可回滚。
 - Desktop 聊天中通过正常 `exec_command` 入口执行的 `rm -rf *` **不再被危险命令启发式拦截**：
@@ -60,7 +60,7 @@ function ea(){ let e=process.env.CODEX_CLI_PATH; ... }
 
 实施方案：
 
-1. 新建稳定目录 `D:\Development\CodexBypassPermissionsRRO\custom-backend\`
+1. 新建稳定目录 `%WORKSPACE%\custom-backend\`
 2. 放入自编译 `codex.exe`，并把原版签名的 sibling 工具一并放入（保证 code-mode / sandbox /
    search 等 helper 能按 `current_exe().parent()` 找到）：
    - `codex-code-mode-host.exe` `753D65BAAFA0CAFA62EB7F0A43F934421FC2EB67CC100C6FF0D8F9749A1AC5F6`
@@ -71,7 +71,7 @@ function ea(){ let e=process.env.CODEX_CLI_PATH; ... }
 3. 设置用户环境变量并广播 `WM_SETTINGCHANGE`：
 
 ```
-CODEX_CLI_PATH = D:\Development\CodexBypassPermissionsRRO\custom-backend\codex.exe
+CODEX_CLI_PATH = %WORKSPACE%\custom-backend\codex.exe
 ```
 
 脚本：`tools\set_user_env_broadcast.ps1`、`tools\install_backend.ps1`
@@ -123,7 +123,7 @@ migration 1 was previously applied but has been modified
 
 ### 已备份
 
-`D:\Development\CodexBypassPermissionsRRO\backup-before-swap\`
+`%WORKSPACE%\backup-before-swap\`
 
 - `state_5.sqlite` / `logs_2.sqlite` / `memories_1.sqlite` / `goals_1.sqlite` / `queue_1.sqlite`
   （SQLite Online Backup API 快照）
@@ -138,7 +138,7 @@ migration 1 was previously applied but has been modified
 ### 回滚步骤
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File D:\Development\CodexBypassPermissionsRRO\tools\restore_backend.ps1
+powershell -ExecutionPolicy Bypass -File %WORKSPACE%\tools\restore_backend.ps1
 ```
 
 脚本会删除用户变量 `CODEX_CLI_PATH` 并广播；随后重启 Codex Desktop 即恢复使用包内原版。
@@ -151,9 +151,9 @@ powershell -ExecutionPolicy Bypass -File D:\Development\CodexBypassPermissionsRR
 ### 6.1 进程与文件（重启后）
 
 ```
-6516  | parent=22276 | D:\Development\CodexBypassPermissionsRRO\custom-backend\codex.exe
+6516  | parent=22276 | %WORKSPACE%\custom-backend\codex.exe
         (-c features.code_mode_host=true app-server --analytics-default-enabled ...)
-21712 | parent=13932 | D:\Development\CodexBypassPermissionsRRO\custom-backend\codex.exe
+21712 | parent=13932 | %WORKSPACE%\custom-backend\codex.exe
         (exec-server --concurrent-requests 32 --remote https://codex-cloud-environments.chatgpt.com/api ...)
 ```
 
@@ -164,14 +164,14 @@ powershell -ExecutionPolicy Bypass -File D:\Development\CodexBypassPermissionsRR
 
 ### 6.2 Desktop 聊天实测
 
-会话 rollout：`C:\Users\UnknownUser\.codex\sessions\2026\11\23\rollout-2026-11-23T01-13-20-01a2043f-82e5-7af1-a617-27bcba416b45.jsonl`
+会话 rollout：`%USERPROFILE%\.codex\sessions\2026\11\23\rollout-2026-11-23T01-13-20-01a2043f-82e5-7af1-a617-27bcba416b45.jsonl`
 
-测试目录（现已被清空）：`D:\Development\CodexBypassPermissionsRRO\desktop-rm-test`
+测试目录（现已被清空）：`%WORKSPACE%\desktop-rm-test`
 初始内容：`alpha.txt`、`beta.txt`、`sub\gamma.txt`
 
 **第一次：原样 `rm -rf *`**（`exec_command`，`workdir` 为测试目录）
 
-- 实际 shell：`C:\Users\UnknownUser\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe`
+- 实际 shell：`%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe`
 - 结果：`exit_code = 1`，stderr：
 
 ```
