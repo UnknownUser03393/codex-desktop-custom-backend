@@ -1,0 +1,16 @@
+# Build artifacts
+target/
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+
+# Local runtime data that must never be committed
+*.sqlite
+*.sqlite-*
+sessions/
+auth.json
+config.toml
+.env
+.env.*

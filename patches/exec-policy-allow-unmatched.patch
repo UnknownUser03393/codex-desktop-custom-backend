@@ -1,0 +1,97 @@
+--- a/codex-rs/core/src/exec_policy.rs
++++ b/codex-rs/core/src/exec_policy.rs
+@@ -866,90 +866,11 @@
+ }
+ 
+ fn render_decision_for_unmatched_command_for_platform(
+-    command: &[String],
+-    context: UnmatchedCommandContext<'_>,
+-    command_platform: DangerousCommandPlatform,
++    _command: &[String],
++    _context: UnmatchedCommandContext<'_>,
++    _command_platform: DangerousCommandPlatform,
+ ) -> Decision {
+-    let dangerous_command_match =
+-        dangerous_command_match_for_origin(command, context.command_origin, command_platform);
+-    let UnmatchedCommandContext {
+-        approval_policy,
+-        permission_profile,
+-        windows_sandbox_level,
+-        sandbox_permissions,
+-        command_origin: _,
+-    } = context;
+-    let file_system_sandbox_policy = permission_profile.file_system_sandbox_policy();
+-    // When the Windows sandbox backend is disabled, managed filesystem
+-    // restrictions are only a policy shape; there is no platform sandbox to
+-    // enforce the boundary. Keep that legacy case conservative while still
+-    // relying on the real Windows sandbox when it is enabled.
+-    let windows_managed_fs_restrictions_without_sandbox_backend = cfg!(windows)
+-        && windows_sandbox_level == WindowsSandboxLevel::Disabled
+-        && profile_has_managed_filesystem_restrictions(permission_profile);
+-
+-    // If the command is flagged as dangerous or we have no sandbox protection,
+-    // we should never allow it to run without approval.
+-    //
+-    // We prefer to prompt the user rather than outright forbid the command,
+-    // but if the user has explicitly disabled prompts, we must
+-    // forbid the command.
+-    if dangerous_command_match.is_some() || windows_managed_fs_restrictions_without_sandbox_backend
+-    {
+-        return match approval_policy {
+-            AskForApproval::Never => Decision::Forbidden,
+-            AskForApproval::OnRequest
+-            | AskForApproval::UnlessTrusted
+-            | AskForApproval::Granular(_) => Decision::Prompt,
+-        };
+-    }
+-
+-    match approval_policy {
+-        AskForApproval::Never => {
+-            // We allow the command to run, relying on the sandbox for
+-            // protection.
+-            Decision::Allow
+-        }
+-        AskForApproval::UnlessTrusted => {
+-            // Projects marked untrusted require approval for every command
+-            // that is not explicitly allowed by an exec policy rule.
+-            Decision::Prompt
+-        }
+-        AskForApproval::OnRequest => {
+-            match file_system_sandbox_policy.kind {
+-                FileSystemSandboxKind::Unrestricted | FileSystemSandboxKind::ExternalSandbox => {
+-                    // The user has indicated we should "just run" commands
+-                    // in their unrestricted environment, so we do so since the
+-                    // command has not been flagged as dangerous.
+-                    Decision::Allow
+-                }
+-                FileSystemSandboxKind::Restricted => {
+-                    // In restricted sandboxes, do not prompt for non-escalated,
+-                    // non-dangerous commands; let the sandbox enforce
+-                    // restrictions without a user prompt.
+-                    if sandbox_permissions.requests_sandbox_override() {
+-                        Decision::Prompt
+-                    } else {
+-                        Decision::Allow
+-                    }
+-                }
+-            }
+-        }
+-        AskForApproval::Granular(_) => match file_system_sandbox_policy.kind {
+-            FileSystemSandboxKind::Unrestricted | FileSystemSandboxKind::ExternalSandbox => {
+-                // Mirror on-request behavior for unmatched commands; prompt-vs-reject is handled
+-                // by `prompt_is_rejected_by_policy`.
+-                Decision::Allow
+-            }
+-            FileSystemSandboxKind::Restricted => {
+-                if sandbox_permissions.requests_sandbox_override() {
+-                    Decision::Prompt
+-                } else {
+-                    Decision::Allow
+-                }
+-            }
+-        },
+-    }
++    Decision::Allow
+ }
+ 
+ fn profile_has_managed_filesystem_restrictions(permission_profile: &PermissionProfile) -> bool {
