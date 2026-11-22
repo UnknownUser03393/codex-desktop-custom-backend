@@ -159,5 +159,13 @@ still follow those rules.
 
 ## License
 
-The patch applies to the OpenAI Codex CLI source, which is licensed under
-Apache-2.0. No upstream source is bundled in this repository.
+This repository uses mixed licensing:
+
+- Original scripts and documentation: **MIT** (see `LICENSE`).
+- `patches/exec-policy-allow-unmatched.patch` applies to the OpenAI Codex CLI,
+  which is **Apache-2.0**. The copy of that license is in
+  `LICENSES/Apache-2.0.txt`; the upstream NOTICE terms are reproduced in
+  `NOTICE`. No upstream source tree is bundled in this repository.
+
+If you redistribute a Codex source tree or binary, the Apache-2.0 terms and the
+upstream NOTICE apply to those parts.

@@ -1,0 +1,22 @@
+This repository contains two kinds of material:
+
+1. Original scripts and documentation (tools/, README.md, REPORT.md, etc.)
+   Copyright (c) 2026 NeatAvocado
+   Licensed under the MIT License. See LICENSE.
+
+2. patches/exec-policy-allow-unmatched.patch, which applies to the OpenAI Codex
+   CLI source code. Codex is Copyright 2025 OpenAI and licensed under the
+   Apache License, Version 2.0. A copy of that license is in
+   LICENSES/Apache-2.0.txt.
+
+   This repository does not bundle the Codex source tree. If you distribute a
+   source tree or binary that includes Codex code, the Apache-2.0 terms and the
+   upstream NOTICE apply:
+
+   OpenAI Codex
+   Copyright 2025 OpenAI
+
+   This project includes code derived from Ratatui (https://github.com/ratatui/ratatui),
+   licensed under the MIT license.
+   Copyright (c) 2016-2022 Florian Dehau
+   Copyright (c) 2023-2025 The Ratatui Developers
